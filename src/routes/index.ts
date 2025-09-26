@@ -1,6 +1,5 @@
 import express from 'express';
-import { write } from 'fs';
-import { readFile, writeFile } from 'fs/promises';
+import { createContact, deleteContact, getContacts } from '../services/contact.js';
 
 const dataSource = './data/list.txt';
 
@@ -13,31 +12,13 @@ router.post('/contato', async (req, res) => {
        return res.json({ error: 'Nome precisa ter pelo menos 2 caracteres.' });
     }
 
-    //processamento dos dados
-    let list: string[] = [];
-    try {
-        const data = await readFile(dataSource, { encoding: 'utf-8' });
-        list = data.split('\n');
-    }catch(err) { 
-        //lista vazia 
-    }
-
-    list.push(name);
+    await createContact(name);
     
-    await writeFile(dataSource, list.join('\n'));
-
     res.status(201).json({ contato: name });
 });
 
 router.get('/contatos', async (req, res) => {
-    //processamento dos dados
-    let list: string[] = [];
-    try {
-        const data = await readFile(dataSource, { encoding: 'utf-8' });
-        list = data.split('\n');
-    }catch(err) { 
-        //lista vazia 
-    }
+    let list = await getContacts();
 
     res.json({ contatos: list });
 });
@@ -49,27 +30,7 @@ router.delete('/contato', async (req, res) => {
         return res.json({ error: 'Nome é obrigatório fioti.' });
     }
 
-    let list: string[] = [];
-
-    try {
-        const data = await readFile(dataSource, { encoding: 'utf-8' });
-        list = data.split('\n');
-    }catch(err) { }
-
-    list = list.filter(item => item.toLowerCase() !== (name as string).toLowerCase());
-
-    // list = list.filter(item => {
-
-    //     // if(item !== name) {
-    //     //     return true;
-    //     // } else {
-    //     //     return false;
-    //     // } tem jeito mais facil
-
-    //     return (item !== name);
-    // }) tem jeito mais facil
-
-    await writeFile(dataSource, list.join('\n'));
+    await deleteContact(name as string);
 
     res.json({ contato: name });
 
